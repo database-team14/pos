@@ -1,0 +1,14 @@
+직관성을 위해 table name 변경
+1. operant -> worker
+2. service_record -> work_record
+3. service -> work_for
+
+고려한 점
+- work_record, work_for에서 자체 ID를 도입하는 건 legal하지 못하다고 판단해 ID 삭제하고 PK를 복수 키로 설정함
+	-> 한 ID의 직원이 여러 매장에서 일할 수 있음
+- 직원의 퇴사 등도 생각해봐야 하기에 work_for 테이블에 퇴직 여부를 더함
+- 최적화를 위해 시급(in work_for)의 타입을 unsigned smallint로 함. 
+
+고려할 점
+- 일반 worker와 manager의 차이점이 없음
+- 하루에 한 번의 근무밖에 불가능함(work_record의 PK가 w_ID와 work_date의 복수키임)

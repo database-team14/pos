@@ -1,0 +1,36 @@
+create table worker
+	(w_ID	 		unsigned int AUTO_INCREMENT, 
+	 w_name			varchar(20) not null, 
+	 w_phone		varchar(20), 
+	 w_position		varchar(10),
+	 m_ID			unsigned int,
+	 primary key (ID),
+	 foreign key (m_ID) references worker (w_ID)
+	);
+
+create table store
+	(s_ID			char(5), 
+	 s_name			varchar(20) not null, 
+	 s_address		varchar(40) not null, 
+	 s_phone			char(20) not null,
+	 primary key (s_ID)
+	);
+
+create table work_record
+	(w_ID			unsigned int not null, 
+	 work_date		date, 
+	 work_start_time		time,
+	 work_end_time		time, 
+	 primary key (w_ID, work_date)
+	);
+
+create table work_for
+	(w_ID		unsigned int, 
+	 s_ID		varchar(20),
+	 start_date	date 
+	 hourly_wage	unsigned smallint
+	 is_working	boolean,
+	 primary key (w_ID, s_ID),
+	 foreign key (w_ID) references worker (w_ID),
+	 foreign key (s_ID) references store (s_ID)
+	);
