@@ -1,0 +1,255 @@
+-- 본사
+INSERT INTO headquarters (head_name) VALUES ('메인 본사');
+
+-- 물류센터
+INSERT INTO warehouse (warehouse_name, warehouse_address, warehouse_phone)
+VALUES
+    ('서울 물류센터', '서울특별시 강남구 물류로 123', '02-1111-2222'),
+    ('부산 물류센터', '부산광역시 해운대구 물류로 456', '051-333-4444'),
+    ('대구 물류센터', '대구광역시 중구 물류로 789', '053-555-6666');
+
+-- 본사와 물류센터 연결
+INSERT INTO connect (head_id, warehouse_id)
+VALUES
+    (1, 1),
+    (1, 2),
+    (1, 3);
+
+-- 상품회사
+INSERT INTO prod_brand (brand_name, brand_address, brand_phone)
+VALUES
+    ('코카콜라', '코카콜라 본사, 서울', '02-1234-5678'),
+    ('펩시', '펩시콜라 본사, 서울', '02-2345-6789'),
+    ('허쉬', '허쉬 본사, 서울', '02-3456-7890'),
+    ('스니커즈', '스니커즈 본사, 서울', '02-4567-8901'),
+    ('미스터클린', '미스터클린 본사, 서울', '02-5678-9012'),
+    ('도브', '도브 본사, 서울', '02-6789-0123'),
+    ('콜게이트', '콜게이트 본사, 서울', '02-7890-1234'),
+    ('농심', '농심 본사, 서울', '02-8901-2345');
+
+-- 계약
+INSERT INTO contract (conclusion_date, termination_date, head_id, brand_id)
+VALUES
+    ('2023-01-01', '2024-01-01', 1, 1),
+    ('2023-02-01', '2024-02-01', 1, 2),
+    ('2023-03-01', '2024-03-01', 1, 3),
+    ('2023-04-01', '2024-04-01', 1, 4),
+    ('2023-05-01', '2024-05-01', 1, 5),
+    ('2023-06-01', '2024-06-01', 1, 6),
+    ('2023-07-01', '2024-07-01', 1, 7),
+    ('2023-08-01', '2024-08-01', 1, 8);
+
+-- 메인카테고리
+INSERT INTO main_category (main_categ_name)
+VALUES
+    ('음료'),
+    ('스낵'),
+    ('생활용품'),
+    ('퍼스널케어'),
+    ('식품');
+
+-- 하위카테고리
+INSERT INTO sub_category (main_categ_id, sub_categ_name)
+VALUES
+    (1, '소프트드링크'),
+    (1, '에너지드링크'),
+    (1, '탄산음료'),
+    (2, '과자'),
+    (2, '스낵'),
+    (5, '간편식'),
+    (4, '샴푸'),
+    (4, '치약'),
+    (3, '세제');
+
+-- 상품
+INSERT INTO product (prod_name, wholesale_price, retail_price, brand_id)
+VALUES
+    ('코카콜라 500ml', 500, 1500, 1),
+    ('펩시 500ml', 500, 1500, 2),
+    ('환타 500ml', 600, 1600, 1),
+    ('허쉬 초콜릿 50g', 800, 1200, 3),
+    ('스니커즈 바', 600, 1200, 4),
+    ('농심 안성탕면', 1000, 2000, 8),
+    ('도브 샴푸 200ml', 1500, 3000, 6),
+    ('콜게이트 치약 150g', 1000, 2500, 7),
+    ('미스터클린 다목적 클리너', 2000, 4500, 5);
+
+-- 상품카테고리
+INSERT INTO prod_category (prod_id, main_categ_id, sub_categ_id)
+VALUES
+  (1, 1, 1),  -- Coca Cola 500ml -> Soft Drink
+  (2, 1, 2),  -- Pepsi 500ml -> Energy Drink
+  (3, 1, 3),  -- Fanta 500ml -> Carbonated Drink
+  (4, 2, 4),  -- Hershey's Chocolate -> Savory Snack
+  (5, 2, 5),  -- Snickers Bar -> Sweet Snack
+  (6, 5, 6),  -- Nongshim Tangmyeon -> Convenience Food
+  (7, 4, 7),  -- Dove Shampoo -> Shampoo
+  (8, 4, 8),  -- Colgate Toothpaste -> Toothpaste
+  (9, 3, 9);  -- Mr. Clean Cleaner -> Detergent
+
+-- 매장
+INSERT INTO store (store_name, store_address, store_phone)
+VALUES
+    ('서울역 1호점', '서울특별시 중구 서울역로 1', '02-5678-9012'),
+    ('강남역 2호점', '서울특별시 강남구 강남대로 12', '02-6789-0123');
+
+-- 재고
+INSERT INTO inventory (inventory, prod_id, store_id)
+VALUES
+    (50, 1, 1),   -- Coca Cola 500ml (store_id 1)
+    (30, 2, 1),   -- Pepsi 500ml (store_id 1)
+    (40, 4, 1),   -- Hershey's Chocolate (store_id 1)
+    (50, 5, 1),   -- Snickers Bar (store_id 1)
+    (60, 1, 2),   -- Coca Cola 500ml (store_id 2)
+    (50, 2, 2),   -- Pepsi 500ml (store_id 2)
+    (40, 3, 2),   -- Fanta 500ml (store_id 2)
+    (25, 4, 2),   -- Hershey's Chocolate (store_id 2)
+    (30, 5, 2),   -- Snickers Bar (store_id 2)
+    (55, 6, 2),   -- Nongshim Anseong Tangmyeon (store_id 2)
+    (70, 7, 2),   -- Dove Shampoo (store_id 2)
+    (60, 8, 2),   -- Colgate Toothpaste (store_id 2)
+    (45, 9, 2);   -- Mr. Clean Multipurpose Cleaner (store_id 2)connect
+
+-- 금고
+INSERT INTO money (money, store_id)
+VALUES
+    (500000, 1),
+    (300000, 2);
+
+-- 직원
+INSERT INTO worker (worker_name, worker_phone, worker_position, resign, manager_id)
+VALUES
+    ('김철수', '010-1234-5678', '사장', 0, NULL),
+    ('이영희', '010-2345-6789', '매니저', 0, 1),
+    ('박민수', '010-3456-7890', '직원', 0, 2),
+    ('최지현', '010-4567-8901', '직원', 0, 2),
+    ('김영희', '010-1111-2222', '매니저', 0, 1),
+    ('최민수', '010-2222-3333', '직원', 0, 5);
+
+-- 소유
+INSERT INTO own (store_id, worker_id)
+VALUES
+    (1, 1),
+    (2, 1);
+
+-- 근무
+INSERT INTO work_for (store_id, worker_id, employment_date, hourly_wage)
+VALUES
+    (1, 2, '2022-01-01', 12000),
+    (1, 3, '2024-02-11', 10000),
+    (1, 4, '2024-07-11', 10000),
+    (2, 5, '2020-11-11', 15000),
+    (2, 6, '2023-12-11', 10000);
+
+
+-- 회원
+INSERT INTO member (mem_name, mem_phone, mem_code, mem_class)
+VALUES
+  ('유재석', '010-1234-5678', 'M10001', 'silver'),
+  ('강호동', '010-8765-4321', 'M10002', 'bronze'),
+  ('박보검', '010-6543-2198', 'M10003', 'gold');
+
+-- 회원 포인트
+INSERT INTO member_point (mem_id, point)
+VALUES
+  (1, 500),
+  (2, 300),
+  (3, 100);
+
+-- 매입
+INSERT INTO purchase (pur_date_time, store_id)
+VALUES
+  ('2024-12-01', 1),
+  ('2024-12-01', 2),
+  ('2024-12-02', 1);
+
+-- 매입내역
+INSERT INTO purchase_record (pur_id, prod_id, quantity)
+VALUES
+  (1, 1, 50),
+  (1, 2, 30),
+  (2, 3, 40),
+  (3, 4, 25);
+
+-- 매입환출
+INSERT INTO purchase_return (pur_re_date_time, store_id)
+VALUES
+  ('2024-12-01 10:30:00', 1),
+  ('2024-12-01 11:00:00', 2);
+
+-- 매입환출내역
+INSERT INTO purchase_return_record (pur_re_id, prod_id, quantity)
+VALUES
+  (1, 1, 5),
+  (2, 2, 3);
+
+-- 매출
+INSERT INTO sale (sale_date_time, store_id)
+VALUES
+  ('2024-12-01 12:00:00', 1),
+  ('2024-12-01 14:30:00', 2);
+
+-- 매출내역
+INSERT INTO sale_record (sale_id, prod_id, quantity)
+VALUES
+  (1, 1, 20),
+  (1, 4, 10),
+  (2, 2, 15),
+  (2, 5, 8);
+
+-- 회원구매내역
+INSERT INTO saleformember (save, sale_id, mem_id)
+VALUES
+  (TRUE, 1, 1),  -- 유재석이 1번 매장에서 구매, 적립
+  (TRUE, 2, 2);  -- 강호동이 2번 매장에서 구매, 적립
+
+-- 매출환입
+INSERT INTO sale_return (sale_re_date_time, sale_id, store_id)
+VALUES
+  ('2024-12-02 09:30:00', 1, 1),
+  ('2024-12-02 10:00:00', 2, 2);
+
+-- 매출환입내역
+INSERT INTO sale_return_record (sale_re_id, prod_id, quantity)
+VALUES
+  (1, 1, 2),
+  (2, 2, 1);
+
+-- 배송기사
+INSERT INTO delivery_driver (driver_name, driver_phone)
+VALUES
+  ('홍길동', '010-1000-2000'),
+  ('김길동', '010-3000-4000'),
+  ('박길동', '010-5000-6000');
+
+-- 배송
+INSERT INTO delivery (delivery_date, warehouse_id, driver_id, store_id, pur_id)
+VALUES
+  ('2024-12-01 10:00:00', 1, 1, 1, 1),
+  ('2024-12-01 14:00:00', 1, 2, 2, 2),
+  ('2024-12-02 09:00:00', 1, 3, 1, 3);
+
+-- 결제방법
+INSERT INTO pay (pay_name)
+VALUES
+  ('현금'),
+  ('신용카드'),
+  ('모바일결제');
+
+-- 결제방법
+INSERT INTO pay_record (sale_id, pay_id)
+VALUES
+  (1, 1),
+  (2, 2);
+
+-- 적립
+INSERT INTO save (point_save_time, mem_point_id, salefor_id)
+VALUES
+  ('2023-11-30 14:30:00', 1, 1),
+  ('2023-11-30 15:30:00', 2, 2);
+
+-- 차감
+INSERT INTO deduct (point_deduct_time, deduct_point, mem_point_id)
+VALUES
+  ('2023-11-30 17:00:00', 100, 1),
+  ('2023-11-30 18:00:00', 50, 2);
