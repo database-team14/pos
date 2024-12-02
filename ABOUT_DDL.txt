@@ -4,11 +4,21 @@
 3. service -> work_for
 
 고려한 점
-- work_record, work_for에서 자체 ID를 도입하는 건 legal하지 못하다고 판단해 ID 삭제하고 PK를 복수 키로 설정함
-	-> 한 ID의 직원이 여러 매장에서 일할 수 있음
+- DB의 효율성을 고려해 work_record, work_for 등의 테이블에서 인조키를 사용해 PK를 설정함
+	-> 한 ID의 직원이 여러 매장에서 일할 수 있음(다른 키값)
 - 직원의 퇴사 등도 생각해봐야 하기에 work_for 테이블에 퇴직 여부를 더함
-- 최적화를 위해 시급(in work_for)의 타입을 unsigned smallint로 함. 
+- db의 효율성을 위해 type을 최소화함
+	-> 시급(in work_for): unsigned smallint
+	-> inventory(in inventory): unsigned tinyint
+- 
 
 고려할 점
-- 일반 worker와 manager의 차이점이 없음
-- 하루에 한 번의 근무밖에 불가능함(work_record의 PK가 w_ID와 work_date의 복수키임)
+- 일반 worker와 manager의 차이점이 없음 -> 접근권한으로 구현..?
+- work_record가 "service_date"의 attribute를 가지고 있어 날짜를 넘어가는 근무를 담지 못함. 하루의 날짜에 대한 근무만을 담을 수 있음.
+- 본사가 하나인데 인조키를 더해가며 테이블을 하나 만들 이유가 있을까?(회사 내부의 시스템이면 더더욱 필요 없음)
+- 금고가 한 매장에 여러 개면 따로 테이블을 파는 것이 맞지만 "갖고 있는 돈" 하나를 나타내기 위해서 금고(money)라는 테이블을 따로 파는 것은 비효율적이어 보임.
+	-> 매장(store) 안에 돈 column을 새로 파는 것은?
+- product의 ID 범위를 어떻게 둬야 할 것인가?
+	-> 상품 종류를 몇 가지 정도로 제한할 것인가?
+- product의 도매가와 소매가 모두 매우 유동적인 값임 + product 내에 도매가/소매가를 넣는 게 맞을까?
+	-> 값에 대한 내력이 아니더라도 그때그때의 
