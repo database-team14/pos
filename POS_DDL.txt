@@ -73,3 +73,61 @@ create table work_for
 	 foreign key (worker_id) references worker (worker_id),
 	 foreign key (store_id) references store (store_id)
 	);
+
+create table pay_record (
+    pay_record_id INT AUTO_INCREMENT PRIMARY KEY,
+    sale_id INT,
+    pay_id INT,
+    FOREIGN KEY (sale_id) REFERENCES sale(sale_id)
+);
+
+
+create table pay (
+    pay_id INT AUTO_INCREMENT PRIMARY KEY,
+    pay_name VARCHAR(20)
+);
+
+
+create table member (
+    mem_id INT AUTO_INCREMENT PRIMARY KEY,
+    mem_name VARCHAR(20),
+    mem_phone VARCHAR(20),
+    mee_code CHAR(15),
+    mem_class ENUM('일반', 'VIP', 'VVIP')
+);
+
+CREATE TABLE saleforemember (
+    salefor_id INT AUTO_INCREMENT PRIMARY KEY,
+    save BOOL,
+    sale_id INT,
+    mem_id INT,
+    FOREIGN KEY (sale_id) REFERENCES sale(sale_id),
+    FOREIGN KEY (mem_id) REFERENCES member(mem_id)
+);
+
+
+CREATE TABLE save (
+    save_id INT AUTO_INCREMENT PRIMARY KEY,
+    point_save_time DATETIME,
+    mem_point_id INT,
+    salefor_id INT,
+    FOREIGN KEY (mem_point_id) REFERENCES member_point(mem_point_id),
+    FOREIGN KEY (salefor_id) REFERENCES saleforemember(salefor_id)
+);
+
+
+CREATE TABLE deduct (
+    deduct_id INT AUTO_INCREMENT PRIMARY KEY,
+    point_deduct_time DATETIME,
+    deduct_point INT,
+    mem_point_id INT,
+    FOREIGN KEY (mem_point_id) REFERENCES member_point(mem_point_id)
+);
+
+
+CREATE TABLE member_point (
+    mem_point_id INT AUTO_INCREMENT PRIMARY KEY,
+    mem_id INT,
+    point INT,
+    FOREIGN KEY (mem_id) REFERENCES member(mem_id)
+);
