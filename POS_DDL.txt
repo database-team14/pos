@@ -1,9 +1,10 @@
 create table worker
-	(worker_id 		unsigned int AUTO_INCREMENT, 
+	(worker_id 		INT UNSIGNED AUTO_INCREMENT, 
 	 worker_name		varchar(20) not null, 
 	 worker_phone		varchar(20), 
 	 worker_position		varchar(10),
-	 manager_id		unsigned int,
+	 worker_code		char(15),
+	 manager_id		INT UNSIGNED,
 	 resign			boolean,
 	 primary key (worker_id),
 	 foreign key (manager_id) references worker (worker_id)
@@ -39,7 +40,7 @@ create table inventory
 	(inven_id			char(5), // product * store로 맞추면 됨
 	 prod_id			char(5), 
 	 store_id			char(5),
-	 inventory		unsigned tinyint,
+	 inventory		SMALLINT UNSIGNED,
 	 primary key (store_id),
 	 foreign key (prod_id) references product (prod_id),
 	 foreign key (prod_id) references product (prod_id)
@@ -54,53 +55,52 @@ create table sale
 	);
 
 create table work_record
-	(work_record		unsigned int AUTO_INCREMENT,
-	 worker_ID		unsigned int not null, 
-	 service_date		date, 
-	 service_start_time		time,
-	 service_end_time		time, 
+	(work_record		INT UNSIGNED AUTO_INCREMENT,
+	 worker_ID		INT UNSIGNED not null, 
+	 service_start_time		DATETIME,
+	 service_end_time		DATETIME, 
 	 primary key (work_record),
 	 foreign key (worker_ID) references worker (worker_ID)
 	);
 
 create table work_for
-	(work_id			unsigned int AUTO_INCREMENT,
-	 worker_id		unsigned int, 
+	(work_id			INT UNSIGNED AUTO_INCREMENT,
+	 worker_id		INT UNSIGNED, 
 	 store_id			char(5),
 	 employment_date		date,
-	 hourly_wage		unsigned smallint,
+	 hourly_wage		SMALLINT UNSIGNED,
 	 primary key (work_id),
 	 foreign key (worker_id) references worker (worker_id),
 	 foreign key (store_id) references store (store_id)
 	);
 
 create table pay_record (
-    pay_record_id INT AUTO_INCREMENT PRIMARY KEY,
-    sale_id INT,
-    pay_id INT,
+    pay_record_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    sale_id INT UNSIGNED,
+    pay_id INT UNSIGNED,
     FOREIGN KEY (sale_id) REFERENCES sale(sale_id)
 );
 
 
 create table pay (
-    pay_id INT AUTO_INCREMENT PRIMARY KEY,
+    pay_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     pay_name VARCHAR(20)
 );
 
 
 create table member (
-    mem_id INT AUTO_INCREMENT PRIMARY KEY,
+    mem_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     mem_name VARCHAR(20),
     mem_phone VARCHAR(20),
-    mee_code CHAR(15),
-    mem_class ENUM('일반', 'VIP', 'VVIP')
+    mem_code CHAR(15) UNIQUE,
+    mem_class ENUM('gold', 'silver', 'bronze')
 );
 
-CREATE TABLE saleforemember (
+CREATE TABLE saleformember (
     salefor_id INT AUTO_INCREMENT PRIMARY KEY,
-    save BOOL,
-    sale_id INT,
-    mem_id INT,
+    save BOOLEAN,
+    sale_id INT UNSIGNED,
+    mem_id INT UNSIGNED,
     FOREIGN KEY (sale_id) REFERENCES sale(sale_id),
     FOREIGN KEY (mem_id) REFERENCES member(mem_id)
 );
@@ -112,22 +112,22 @@ CREATE TABLE save (
     mem_point_id INT,
     salefor_id INT,
     FOREIGN KEY (mem_point_id) REFERENCES member_point(mem_point_id),
-    FOREIGN KEY (salefor_id) REFERENCES saleforemember(salefor_id)
+    FOREIGN KEY (salefor_id) REFERENCES saleformember(salefor_id)
 );
 
 
 CREATE TABLE deduct (
     deduct_id INT AUTO_INCREMENT PRIMARY KEY,
     point_deduct_time DATETIME,
-    deduct_point INT,
-    mem_point_id INT,
+    deduct_point INT UNSIGNED,
+    mem_point_id INT UNSIGNED,
     FOREIGN KEY (mem_point_id) REFERENCES member_point(mem_point_id)
 );
 
 
 CREATE TABLE member_point (
-    mem_point_id INT AUTO_INCREMENT PRIMARY KEY,
-    mem_id INT,
-    point INT,
+    mem_point_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    mem_id INT UNSIGNED,
+    point INT UNSIGNED,
     FOREIGN KEY (mem_id) REFERENCES member(mem_id)
 );
