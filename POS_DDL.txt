@@ -1,78 +1,100 @@
+DROP DATABASE IF EXISTS pos_db;
+CREATE DATABASE pos_db;
+USE pos_db;
+
 create table worker
-	(worker_id 		INT UNSIGNED AUTO_INCREMENT, 
-	 worker_name		varchar(20) not null, 
-	 worker_phone		varchar(20), 
-	 worker_position		ENUM('사장', '매니저', '직원') not null,
-	 worker_code		char(15) UNIQUE,
-	 manager_id		INT UNSIGNED,
-	 resign			boolean,
-	 primary key (worker_id),
-	 foreign key (manager_id) references worker (worker_id)
-	);
+   (worker_id       INT UNSIGNED AUTO_INCREMENT,
+    worker_name      varchar(20) not null,
+    worker_phone      varchar(20),
+    worker_position      ENUM('사장', '매니저', '직원') not null,
+    worker_code      char(15) UNIQUE,
+    manager_id      INT UNSIGNED,
+    resign         boolean,
+    primary key (worker_id),
+    foreign key (manager_id) references worker (worker_id)
+   );
 
 create table store
-	(store_id			INT UNSIGNED AUTO_INCREMENT, 
-	 store_name		varchar(20) not null, 
-	 store_address		varchar(50) not null, 
-	 store_phone		char(20) not null,
-	 primary key (store_id)
-	);
+   (store_id         INT UNSIGNED AUTO_INCREMENT,
+    store_name      varchar(20) not null,
+    store_address      varchar(50) not null,
+    store_phone      char(20) not null,
+    primary key (store_id)
+   );
 
 create table prod_brand
-	(brand_id			INT UNSIGNED AUTO_INCREMENT, 
-	 brand_name		varchar(20) not null, 
-	 brand_address		varchar(50) not null, 
-	 brand_phone		char(20) not null,
-	 primary key (brand_id)
-	);
+   (brand_id         INT UNSIGNED AUTO_INCREMENT,
+    brand_name      varchar(20) not null,
+    brand_address      varchar(50) not null,
+    brand_phone      char(20) not null,
+    primary key (brand_id)
+   );
 
 create table product
-	(prod_id			INT UNSIGNED AUTO_INCREMENT, 
-	 prod_name		varchar(40) not null,
-	 wholesale_price		INT UNSIGNED,
-	 retail_price		INT UNSIGNED,
-	 brand_id			INT UNSIGNED,
-	 primary key (prod_id),
-	 foreign key (brand_id) references prod_brand (brand_id)
-	);
+   (prod_id         INT UNSIGNED AUTO_INCREMENT,
+    prod_name      varchar(40) not null,
+    wholesale_price      INT UNSIGNED,
+    retail_price      INT UNSIGNED,
+    brand_id         INT UNSIGNED,
+    primary key (prod_id),
+    foreign key (brand_id) references prod_brand (brand_id)
+   );
 
 create table inventory
-	(inven_id			INT UNSIGNED AUTO_INCREMENT,
-	 prod_id			INT UNSIGNED, 
-	 store_id			INT UNSIGNED,
-	 inventory		SMALLINT UNSIGNED CHECK (inventory > 0),
-	 primary key (inven_id),
-	 foreign key (prod_id) references product (prod_id),
-	 foreign key (store_id) references store (store_id)
-	);
+   (inven_id         INT UNSIGNED AUTO_INCREMENT,
+    prod_id         INT UNSIGNED,
+    store_id         INT UNSIGNED,
+    inventory      SMALLINT UNSIGNED CHECK (inventory > 0),
+    primary key (inven_id),
+    foreign key (prod_id) references product (prod_id),
+    foreign key (store_id) references store (store_id)
+   );
 
 create table sale
-	(sale_id			INT UNSIGNED AUTO_INCREMENT,
-	 sale_date_time		datetime,
-	 store_id			INT UNSIGNED,
-	 primary key (sale_id),
-	 foreign key (store_id) references store (store_id)
-	);
+   (sale_id         INT UNSIGNED AUTO_INCREMENT,
+    sale_date_time      datetime,
+    store_id         INT UNSIGNED,
+    primary key (sale_id),
+    foreign key (store_id) references store (store_id)
+   );
+
+create table sale_record
+   (sale_record_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+     sale_id INT UNSIGNED,
+     prod_id INT UNSIGNED,
+     quantity SMALLINT UNSIGNED,
+     FOREIGN KEY (sale_id) REFERENCES sale(sale_id),
+     FOREIGN KEY (prod_id) REFERENCES product(prod_id)
+     );
 
 create table work_record
-	(work_record		INT UNSIGNED AUTO_INCREMENT,
-	 worker_ID		INT UNSIGNED not null, 
-	 service_start_time		DATETIME,
-	 service_end_time		DATETIME, 
-	 primary key (work_record),
-	 foreign key (worker_ID) references worker (worker_ID)
-	);
+   (work_record      INT UNSIGNED AUTO_INCREMENT,
+    worker_ID      INT UNSIGNED not null,
+    service_start_time      DATETIME,
+    service_end_time      DATETIME,
+    primary key (work_record),
+    foreign key (worker_ID) references worker (worker_ID)
+   );
 
 create table work_for
-	(work_id			INT UNSIGNED AUTO_INCREMENT,
-	 worker_id		INT UNSIGNED not null, 
-	 store_id			INT UNSIGNED not null,
-	 employment_date		date,
-	 hourly_wage		SMALLINT UNSIGNED,
-	 primary key (work_id),
-	 foreign key (worker_id) references worker (worker_id),
-	 foreign key (store_id) references store (store_id)
-	);
+   (work_id         INT UNSIGNED AUTO_INCREMENT,
+    worker_id      INT UNSIGNED not null,
+    store_id         INT UNSIGNED not null,
+    employment_date      date,
+    hourly_wage      SMALLINT UNSIGNED,
+    primary key (work_id),
+    foreign key (worker_id) references worker (worker_id),
+    foreign key (store_id) references store (store_id)
+   );
+
+CREATE TABLE own (
+    own_id INT UNSIGNED AUTO_INCREMENT,
+    worker_id INT UNSIGNED not null,
+    store_id INT UNSIGNED not null,
+    PRIMARY KEY (own_id),
+    FOREIGN KEY (store_id) REFERENCES store(store_id),
+    FOREIGN KEY (worker_id) REFERENCES worker(worker_id)
+);
 
 create table pay_record (
     pay_record_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -192,8 +214,10 @@ CREATE TABLE purchase_return_record (
 CREATE TABLE sale_return (
     sale_re_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     sale_re_date_time DATETIME,
+    sale_id INT UNSIGNED not null,
     store_id INT UNSIGNED not null,
-    FOREIGN KEY (store_id) REFERENCES store(store_id)
+    FOREIGN KEY (store_id) REFERENCES store(store_id),
+    FOREIGN KEY (sale_id) REFERENCES sale(sale_id)
 );
 
 CREATE TABLE sale_return_record (
