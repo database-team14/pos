@@ -131,3 +131,95 @@ CREATE TABLE member_point (
     point INT,
     FOREIGN KEY (mem_id) REFERENCES member(mem_id)
 );
+
+
+
+
+-- 재고 테이블
+CREATE TABLE inventory (
+    inven_id INT AUTO_INCREMENT PRIMARY KEY,
+    inventory SMALLINT,
+    prod_id INT,
+    매장 ID INT,
+    FOREIGN KEY (prod_id) REFERENCES product(prod_id)
+);
+
+-- 매장 테이블
+CREATE TABLE store (
+    store_id INT AUTO_INCREMENT PRIMARY KEY,
+    store_name VARCHAR(20),
+    store_address VARCHAR(100),
+    store_phone VARCHAR(20)
+);
+
+-- 배송 테이블
+CREATE TABLE delivery (
+    delivery_id INT AUTO_INCREMENT PRIMARY KEY,
+    delivery_date DATETIME,
+    warehouse_id INT,
+    driver_id INT,
+    store_id INT,
+    pur_id
+    FOREIGN KEY (warehouse_id) REFERENCES warehouse(warehouse_id)
+);
+
+-- 배송기사 테이블
+CREATE TABLE delivery_driver (
+    driver_id INT AUTO_INCREMENT PRIMARY KEY,
+    driver_name VARCHAR(20),
+    driver_phone VARCHAR(100)
+);
+
+-- 매입 테이블
+CREATE TABLE purchase (
+    pur_id INT AUTO_INCREMENT PRIMARY KEY,
+    pur_date_time DATETIME,
+    store_id INT,
+    FOREIGN KEY (store_id) REFERENCES store(store_id)
+);
+
+-- 매입내역 테이블
+CREATE TABLE purchase_record (
+    pur_record_id INT AUTO_INCREMENT PRIMARY KEY,
+    pur_id INT,
+    prod_id INT,
+    quantity SMALLINT,
+    FOREIGN KEY (pur_id) REFERENCES purchase(pur_id),
+    FOREIGN KEY (prod_id) REFERENCES product(prod_id)
+);
+
+-- 매입환불 테이블
+CREATE TABLE purchase_return (
+    pur_re_id INT AUTO_INCREMENT PRIMARY KEY,
+    pur_re_date_time DATETIME,
+    store_id INT,
+    FOREIGN KEY (store_id) REFERENCES store(store_id)
+);
+
+-- 매입환불내역 테이블
+CREATE TABLE purchase_return_record (
+    pur_re_record_id INT AUTO_INCREMENT PRIMARY KEY,
+    pur_re_id INT,
+    prod_id INT,
+    quantity SMALLINT,
+    FOREIGN KEY (pur_re_id) REFERENCES purchase_return(pur_re_id),
+    FOREIGN KEY (prod_id) REFERENCES product(prod_id)
+);
+
+-- 매출환불 테이블
+CREATE TABLE sale_return (
+    sale_re_id INT AUTO_INCREMENT PRIMARY KEY,
+    sale_re_date_time DATETIME,
+    store_id INT,
+    FOREIGN KEY (store_id) REFERENCES store(store_id)
+);
+
+-- 매출환불내역 테이블
+CREATE TABLE sale_return_record (
+    sale_re_record_id INT AUTO_INCREMENT PRIMARY KEY,
+    sale_re_id INT,
+    prod_id INT,
+    quantity SMALLINT,
+    FOREIGN KEY (sale_re_id) REFERENCES sale_return(sale_re_id),
+    FOREIGN KEY (prod_id) REFERENCES product(prod_id)
+);
