@@ -195,3 +195,80 @@ CREATE TABLE sale_return_record (
     FOREIGN KEY (sale_re_id) REFERENCES sale_return(sale_re_id),
     FOREIGN KEY (prod_id) REFERENCES product(prod_id)
 );
+
+CREATE TABLE headquaters (
+    head_id INT AUTO_INCREMENT PRIMARY KEY,
+    head_name VARCHAR(20)
+);
+
+-- 연결 테이블
+CREATE TABLE connect (
+    connect_id INT AUTO_INCREMENT PRIMARY KEY,
+    warehouse_id INT,
+    head_id INT,
+    FOREIGN KEY (warehouse_id) REFERENCES warehouse(warehouse_id),
+    FOREIGN KEY (head_id) REFERENCES headquaters(head_id)
+);
+
+-- 물류센터 테이블
+CREATE TABLE warehouse (
+    warehouse_id INT AUTO_INCREMENT PRIMARY KEY,
+    warehouse_name VARCHAR(20),
+    warehouse_address VARCHAR(100),
+    warehouse_phone VARCHAR(20)
+);
+
+-- 메인카테고리 테이블
+CREATE TABLE main_category (
+    main_categ_id INT AUTO_INCREMENT PRIMARY KEY,
+    main_categ_name VARCHAR(20)
+);
+
+-- 하위카테고리 테이블
+CREATE TABLE sub_category (
+    sub_categ_id INT AUTO_INCREMENT PRIMARY KEY,
+    main_categ_id INT,
+    sub_categ_name VARCHAR(20),
+    FOREIGN KEY (main_categ_id) REFERENCES main_category(main_categ_id)
+);
+
+-- 상품카테고리 테이블
+CREATE TABLE prod_category (
+    prod_id INT AUTO_INCREMENT PRIMARY KEY,
+    main_categ_id INT,
+    sub_categ_id INT,
+    FOREIGN KEY (main_categ_id) REFERENCES main_category(main_categ_id),
+    FOREIGN KEY (sub_categ_id) REFERENCES sub_category(sub_categ_id)
+);
+
+-- 상품 테이블
+CREATE TABLE product (
+    prod_id INT AUTO_INCREMENT PRIMARY KEY,
+    prod_name VARCHAR(20),
+    wholesale_price INT,
+    retail_price INT,
+    brand_id INT,
+    FOREIGN KEY (brand_id) REFERENCES prod_brand(brand_id)
+);
+
+
+-- 금고 테이블
+CREATE TABLE money (
+    money_id INT AUTO_INCREMENT PRIMARY KEY,
+    money INT,
+    store_id INT,
+    FOREIGN KEY (store_id) REFERENCES store(store_id)
+);
+
+-- 계약 테이블
+CREATE TABLE contract (
+    contract_id INT AUTO_INCREMENT PRIMARY KEY,
+    conclusion_date DATE,
+    termination_date DATE,
+    head_id INT,
+    brand_id INT,
+    FOREIGN KEY (head_id) REFERENCES headquaters(head_id),
+    FOREIGN KEY (brand_id) REFERENCES prod_brand(brand_id)
+);
+
+
