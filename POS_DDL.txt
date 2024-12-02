@@ -2,8 +2,8 @@ create table worker
 	(worker_id 		INT UNSIGNED AUTO_INCREMENT, 
 	 worker_name		varchar(20) not null, 
 	 worker_phone		varchar(20), 
-	 worker_position		varchar(10),
-	 worker_code		char(15),
+	 worker_position		ENUM('사장', '매니저', '직원') not null,
+	 worker_code		char(15) UNIQUE,
 	 manager_id		INT UNSIGNED,
 	 resign			boolean,
 	 primary key (worker_id),
@@ -11,7 +11,7 @@ create table worker
 	);
 
 create table store
-	(store_id			char(5), 
+	(store_id			INT UNSIGNED AUTO_INCREMENT, 
 	 store_name		varchar(20) not null, 
 	 store_address		varchar(50) not null, 
 	 store_phone		char(20) not null,
@@ -19,7 +19,7 @@ create table store
 	);
 
 create table prod_brand
-	(brand_id			char(5), 
+	(brand_id			INT UNSIGNED AUTO_INCREMENT, 
 	 brand_name		varchar(20) not null, 
 	 brand_address		varchar(50) not null, 
 	 brand_phone		char(20) not null,
@@ -27,29 +27,29 @@ create table prod_brand
 	);
 
 create table product
-	(prod_id			char(5), 
+	(prod_id			INT UNSIGNED AUTO_INCREMENT, 
 	 prod_name		varchar(40) not null,
-	 wholesale_price		varchar(50) not null, // 생각이 필요함
-	 retail_price		char(20) not null, // 생각이 필요함
-	 brand_id			char(5),
-	 primary key (store_id),
-	 foreign key (worker_id) references worker (worker_id)
+	 wholesale_price		INT UNSIGNED,
+	 retail_price		INT UNSIGNED,
+	 brand_id			INT UNSIGNED,
+	 primary key (prod_id),
+	 foreign key (brand_id) references prod_brand (brand_id)
 	);
 
 create table inventory
-	(inven_id			char(5), // product * store로 맞추면 됨
-	 prod_id			char(5), 
-	 store_id			char(5),
-	 inventory		SMALLINT UNSIGNED,
-	 primary key (store_id),
+	(inven_id			INT UNSIGNED AUTO_INCREMENT,
+	 prod_id			INT UNSIGNED, 
+	 store_id			INT UNSIGNED,
+	 inventory		SMALLINT UNSIGNED CHECK (inventory > 0),
+	 primary key (inven_id),
 	 foreign key (prod_id) references product (prod_id),
-	 foreign key (prod_id) references product (prod_id)
+	 foreign key (store_id) references store (store_id)
 	);
 
 create table sale
-	(sale_id			char(5),
+	(sale_id			INT UNSIGNED AUTO_INCREMENT,
 	 sale_date_time		datetime,
-	 store_id			char(5),
+	 store_id			INT UNSIGNED,
 	 primary key (sale_id),
 	 foreign key (store_id) references store (store_id)
 	);
@@ -65,8 +65,8 @@ create table work_record
 
 create table work_for
 	(work_id			INT UNSIGNED AUTO_INCREMENT,
-	 worker_id		INT UNSIGNED, 
-	 store_id			char(5),
+	 worker_id		INT UNSIGNED not null, 
+	 store_id			INT UNSIGNED not null,
 	 employment_date		date,
 	 hourly_wage		SMALLINT UNSIGNED,
 	 primary key (work_id),
@@ -97,7 +97,7 @@ create table member (
 );
 
 CREATE TABLE saleformember (
-    salefor_id INT AUTO_INCREMENT PRIMARY KEY,
+    salefor_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     save BOOLEAN,
     sale_id INT UNSIGNED,
     mem_id INT UNSIGNED,
@@ -106,28 +106,157 @@ CREATE TABLE saleformember (
 );
 
 
+CREATE TABLE member_point (
+    mem_point_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    mem_id INT UNSIGNED not null,
+    point INT UNSIGNED,
+    FOREIGN KEY (mem_id) REFERENCES member(mem_id)
+);
+
 CREATE TABLE save (
-    save_id INT AUTO_INCREMENT PRIMARY KEY,
+    save_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     point_save_time DATETIME,
-    mem_point_id INT,
-    salefor_id INT,
+    mem_point_id INT UNSIGNED,
+    salefor_id INT UNSIGNED,
     FOREIGN KEY (mem_point_id) REFERENCES member_point(mem_point_id),
     FOREIGN KEY (salefor_id) REFERENCES saleformember(salefor_id)
 );
 
 
 CREATE TABLE deduct (
-    deduct_id INT AUTO_INCREMENT PRIMARY KEY,
+    deduct_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     point_deduct_time DATETIME,
-    deduct_point INT UNSIGNED,
-    mem_point_id INT UNSIGNED,
+    deduct_point INT UNSIGNED not null,
+    mem_point_id INT UNSIGNED not null,
     FOREIGN KEY (mem_point_id) REFERENCES member_point(mem_point_id)
 );
 
 
-CREATE TABLE member_point (
-    mem_point_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    mem_id INT UNSIGNED,
-    point INT UNSIGNED,
-    FOREIGN KEY (mem_id) REFERENCES member(mem_id)
+-- 물류센터 테이블
+CREATE TABLE warehouse (
+    warehouse_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    warehouse_name VARCHAR(20) not null,
+    warehouse_address VARCHAR(100),
+    warehouse_phone VARCHAR(20) not null
+);
+
+
+CREATE TABLE delivery (
+    delivery_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    delivery_date DATETIME,
+    warehouse_id INT UNSIGNED not null,
+    driver_id INT UNSIGNED not null,
+    store_id INT UNSIGNED not null,
+    pur_id INT UNSIGNED not null,
+    FOREIGN KEY (warehouse_id) REFERENCES warehouse(warehouse_id)
+);
+
+CREATE TABLE delivery_driver (
+    driver_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    driver_name VARCHAR(20) not null,
+    driver_phone VARCHAR(100)
+);
+
+CREATE TABLE purchase (
+    pur_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    pur_date_time DATETIME,
+    store_id INT UNSIGNED not null,
+    FOREIGN KEY (store_id) REFERENCES store(store_id)
+);
+
+CREATE TABLE purchase_record (
+    pur_record_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    pur_id INT UNSIGNED not null,
+    prod_id INT UNSIGNED not null,
+    quantity SMALLINT UNSIGNED CHECK (quantity > 0),
+    FOREIGN KEY (pur_id) REFERENCES purchase(pur_id),
+    FOREIGN KEY (prod_id) REFERENCES product(prod_id)
+);
+
+CREATE TABLE purchase_return (
+    pur_re_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    pur_re_date_time DATETIME,
+    store_id INT UNSIGNED not null,
+    FOREIGN KEY (store_id) REFERENCES store(store_id)
+);
+
+CREATE TABLE purchase_return_record (
+    pur_re_record_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    pur_re_id INT UNSIGNED not null,
+    prod_id INT UNSIGNED not null,
+    quantity SMALLINT UNSIGNED CHECK (quantity > 0),
+    FOREIGN KEY (pur_re_id) REFERENCES purchase_return(pur_re_id),
+    FOREIGN KEY (prod_id) REFERENCES product(prod_id)
+);
+
+CREATE TABLE sale_return (
+    sale_re_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    sale_re_date_time DATETIME,
+    store_id INT UNSIGNED not null,
+    FOREIGN KEY (store_id) REFERENCES store(store_id)
+);
+
+CREATE TABLE sale_return_record (
+    sale_re_record_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    sale_re_id INT UNSIGNED not null,
+    prod_id INT UNSIGNED not null,
+    quantity SMALLINT CHECK (quantity > 0),
+    FOREIGN KEY (sale_re_id) REFERENCES sale_return(sale_re_id),
+    FOREIGN KEY (prod_id) REFERENCES product(prod_id)
+);
+
+CREATE TABLE headquaters (
+    head_id INT AUTO_INCREMENT PRIMARY KEY,
+    head_name VARCHAR(20) not null
+);
+
+-- 연결 테이블
+CREATE TABLE connect (
+    connect_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    warehouse_id INT UNSIGNED not null,
+    head_id INT UNSIGNED not null,
+    FOREIGN KEY (warehouse_id) REFERENCES warehouse(warehouse_id),
+    FOREIGN KEY (head_id) REFERENCES headquaters(head_id)
+);
+
+-- 메인카테고리 테이블
+CREATE TABLE main_category (
+    main_categ_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    main_categ_name VARCHAR(20)
+);
+
+-- 하위카테고리 테이블
+CREATE TABLE sub_category (
+    sub_categ_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    main_categ_id INT UNSIGNED not null,
+    sub_categ_name VARCHAR(20) not null,
+    FOREIGN KEY (main_categ_id) REFERENCES main_category(main_categ_id)
+);
+
+-- 상품카테고리 테이블
+CREATE TABLE prod_category (
+    prod_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    main_categ_id INT UNSIGNED not null,
+    sub_categ_id INT UNSIGNED not null,
+    FOREIGN KEY (main_categ_id) REFERENCES main_category(main_categ_id),
+    FOREIGN KEY (sub_categ_id) REFERENCES sub_category(sub_categ_id)
+);
+
+-- 금고 테이블
+CREATE TABLE money (
+    money_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    money INT UNSIGNED,
+    store_id INT UNSIGNED not null,
+    FOREIGN KEY (store_id) REFERENCES store(store_id)
+);
+
+-- 계약 테이블
+CREATE TABLE contract (
+    contract_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    conclusion_date DATE,
+    termination_date DATE,
+    head_id INT UNSIGNED not null,
+    brand_id INT UNSIGNED not null,
+    FOREIGN KEY (head_id) REFERENCES headquaters(head_id),
+    FOREIGN KEY (brand_id) REFERENCES prod_brand(brand_id)
 );
