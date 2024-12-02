@@ -205,7 +205,7 @@ CREATE TABLE sale_return_record (
     FOREIGN KEY (prod_id) REFERENCES product(prod_id)
 );
 
-CREATE TABLE headquaters (
+CREATE TABLE headquarters (
     head_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     head_name VARCHAR(20) not null
 );
@@ -216,7 +216,7 @@ CREATE TABLE connect (
     warehouse_id INT UNSIGNED not null,
     head_id INT UNSIGNED not null,
     FOREIGN KEY (warehouse_id) REFERENCES warehouse(warehouse_id),
-    FOREIGN KEY (head_id) REFERENCES headquaters(head_id)
+    FOREIGN KEY (head_id) REFERENCES headquarters(head_id)
 );
 
 -- 메인카테고리 테이블
@@ -257,6 +257,6 @@ CREATE TABLE contract (
     termination_date DATE,
     head_id INT UNSIGNED not null,
     brand_id INT UNSIGNED not null,
-    FOREIGN KEY (head_id) REFERENCES headquaters(head_id),
+    FOREIGN KEY (head_id) REFERENCES headquarters(head_id),
     FOREIGN KEY (brand_id) REFERENCES prod_brand(brand_id)
 );
