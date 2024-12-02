@@ -49,10 +49,9 @@ create table sale
 	(sale_id			char(5),
 	 sale_date_time		datetime,
 	 store_id			char(5),
-	 
+	 primary key (sale_id),
+	 foreign key (store_id) references store (store_id)
 	);
-
-create table 
 
 create table work_record
 	(work_record		unsigned int AUTO_INCREMENT,

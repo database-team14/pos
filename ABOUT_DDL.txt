@@ -9,8 +9,10 @@
 - 직원의 퇴사 등도 생각해봐야 하기에 work_for 테이블에 퇴직 여부를 더함
 - db의 효율성을 위해 type을 최소화함
 	-> 시급(in work_for): unsigned smallint
-	-> inventory(in inventory): unsigned tinyint
+	-> inventory(in inventory): unsigned smallint
 - 
+- 매입, 매출 등 돈이 오갈 때마다 프로그램 딴에서 금고 update
+- product 안에 도매가/소매가를 넣고 프로그램 딴에서 업데이트한다.
 
 고려할 점
 - 일반 worker와 manager의 차이점이 없음 -> 접근권한으로 구현..?
@@ -20,5 +22,3 @@
 	-> 매장(store) 안에 돈 column을 새로 파는 것은?
 - product의 ID 범위를 어떻게 둬야 할 것인가?
 	-> 상품 종류를 몇 가지 정도로 제한할 것인가?
-- product의 도매가와 소매가 모두 매우 유동적인 값임 + product 내에 도매가/소매가를 넣는 게 맞을까?
-	-> 값에 대한 내력이 아니더라도 그때그때의 
