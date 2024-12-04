@@ -14,24 +14,30 @@ public class Main {
         try (Connection connection = DriverManager.getConnection(URL, USER, PASSWORD)) {
             System.out.println("successfully connected to MySQL DB!");
 
-            System.out.println("Enter your ID: ");
+            System.out.print("Enter your ID: ");
             Scanner scanner = new Scanner(System.in);
             String ID = scanner.nextLine();
 
-            String buffer, worker_id, store_id;
-            int position_id;
+            String buffer;
+            int position_id, worker_id, store_id;
 
             /* get worker_name and position_name */
-            String bufferSQL = "SELECT w.worker_id, wp.position_id, wp.position_name\n" +
+            String bufferSQL = "SELECT w.worker_id, w.worker_name, wp.position_id, wp.position_name\n" +
                     "FROM worker w\n" +
                     "JOIN worker_position wp ON w.position_id = wp.position_id\n" +
-                    "WHERE w.worker_code = " + ID + ";";
+                    "WHERE w.worker_code = '" + ID + "';";
             try (Statement statement = connection.createStatement();
                  ResultSet resultSet = statement.executeQuery(bufferSQL)) {
-                buffer = resultSet.getString("worker_position") + " " + resultSet.getString("worker_name");
-                position_id = resultSet.getInt("position_id");
-                worker_id = resultSet.getString("worker_id");
+                if (resultSet.next()) { // resultSet이 비어있지 않으면 실행
+                    buffer = resultSet.getString("position_name") + " " + resultSet.getString("worker_name");
+                    position_id = resultSet.getInt("position_id");
+                    worker_id = resultSet.getInt("worker_id");
+                } else {
+                    System.out.println("No matching record found for worker_code: " + ID);
+                    return;
+                }
             } catch (Exception e){
+                e.printStackTrace();
                 System.out.println("Not a legal access");
                 return;
             }
@@ -46,7 +52,12 @@ public class Main {
                     "WHERE worker_id = " + worker_id + ";";
             try (Statement statement = connection.createStatement();
                  ResultSet resultSet = statement.executeQuery(bufferSQL)) {
-                store_id = resultSet.getString("store_id");
+                if (resultSet.next()) { // resultSet이 비어있지 않으면 실행
+                    store_id = resultSet.getInt("store_id");
+                } else {
+                    System.out.println("No matching record found for worker_code: " + ID);
+                    return;
+                }
             }
 
             int user_input;
@@ -112,7 +123,6 @@ public class Main {
                                     System.out.printf("%-10s %-40s %-20s %-10s%n", "prod_id", "prod_name", "brand_name", "inventory");
                                     System.out.println("--------------------------------------------------------------");
 
-                                    int i = 0;
                                     while (resultSet.next()) {
                                         int prodId = resultSet.getInt("prod_id");
                                         String prodName = resultSet.getString("prod_name");
@@ -137,13 +147,44 @@ public class Main {
                                         "SET inventory = inventory - 1\n" +
                                         "WHERE store_id = " + store_id + " AND prod_id = " + prod_id + " AND inventory > 0;";
 
-                                try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
-                                     PreparedStatement pstmt = conn.prepareStatement(bufferSQL)) {
+                                try (Connection conn1 = DriverManager.getConnection(URL, USER, PASSWORD);
+                                     PreparedStatement pstmt = conn1.prepareStatement(bufferSQL)) {
 
                                     int rowsAffected = pstmt.executeUpdate();
 
                                     if (rowsAffected > 0) {
                                         /* money update */
+                                        // SQL query to get retail_price from the product table
+                                        String getRetailPriceQuery = "SELECT retail_price FROM product WHERE prod_id = " + prod_id;
+
+                                        // SQL query to update the money table
+                                        String updateMoneyQuery = "UPDATE money SET money = money + ? WHERE store_id = " + store_id;
+
+                                        try (Connection conn2 = DriverManager.getConnection(URL, USER, PASSWORD);
+                                             // Get the retail_price
+                                             PreparedStatement getRetailPriceStmt = conn2.prepareStatement(getRetailPriceQuery);
+                                             ResultSet rs = getRetailPriceStmt.executeQuery()) {
+
+                                            // Check if the product exists
+                                            if (rs.next()) {
+                                                int retailPrice = rs.getInt("retail_price");
+
+                                                // Prepare the update query
+                                                try (PreparedStatement updateStmt = conn2.prepareStatement(updateMoneyQuery)) {
+                                                    // Set the retail_price as the value to add to money
+                                                    updateStmt.setInt(1, retailPrice);
+
+                                                    // Execute the update query
+                                                    rowsAffected = updateStmt.executeUpdate();
+                                                    if (rowsAffected > 0) {
+                                                        System.out.println("Money updated successfully.");
+                                                    } else {
+                                                        System.out.println("No rows updated.");
+                                                    }
+                                                }
+                                            }
+
+                                        }
 
                                         System.out.print("Payment succeeded. Inventory updated. Money updated");
                                         if (user_input != 0)
@@ -188,6 +229,8 @@ public class Main {
                                 System.out.print("Which sale_id?: ");
                                 int sale_id = scanner.nextInt();
 
+                                System.out.println("Refund of sale_id " + sale_id + " is completed. Points updated. Money updated.");
+
                                 break;
                             case 3:
                                 break;
@@ -200,9 +243,9 @@ public class Main {
                         }
                         else{
                             System.out.print("[1] purchase\n" /* 매입 */ +
-                                    "[2] check whether the delivery is completed\n" /* 매입에 따른 배송 내역 확인 */ +
-                                    "[3] recall\n" /*  */ +
-                                    "[4] exit\n" +
+                                    "[2] check whether the delivery is completed\n" /* 매입에 따른 배송 여부 확인 */ +
+                                    "[3] recall\n" /* 매입환출 */ +
+                                    "[4] return to the menu\n" +
                                     "Enter your command: ");
                             user_input = scanner.nextInt();
                             System.out.print("\n\n");
@@ -210,6 +253,8 @@ public class Main {
                             switch (user_input){
                                 case 1:
                                     /* 매입 */
+
+                                    /* 재고 조회 */
                                     bufferSQL = "SELECT p.prod_id, p.prod_name, b.brand_name, i.inventory\n" +
                                             "FROM product p\n" +
                                             "JOIN prod_brand b ON p.brand_id = b.brand_id\n" +
@@ -230,19 +275,157 @@ public class Main {
 
                                             System.out.printf("%-10d %-40s %-20s %-10d%n", prodId, prodName, brandName, inventory);
                                         }
-                                        System.out.print("\n\n");
+                                    }
+
+                                    /* 상품 입력 */
+                                    System.out.print("Which product?: ");
+                                    int prod_id = scanner.nextInt();
+                                    System.out.print("\n\n");
+
+                                    /* Update the inventory */
+                                    bufferSQL = "UPDATE inventory\n" +
+                                            "SET inventory = inventory - 1\n" +
+                                            "WHERE store_id = " + store_id + " AND prod_id = " + prod_id + " AND inventory > 0;";
+
+                                    try (Connection conn1 = DriverManager.getConnection(URL, USER, PASSWORD);
+                                         PreparedStatement pstmt = conn1.prepareStatement(bufferSQL)) {
+
+                                        int rowsAffected = pstmt.executeUpdate();
+
+                                        if (rowsAffected > 0) {
+                                            /* money update */
+                                            // SQL query to get retail_price from the product table
+                                            String getWholesalePriceQuery = "SELECT wholesale_price FROM product WHERE prod_id = " + prod_id;
+
+                                            // SQL query to update the money table
+                                            String updateMoneyQuery = "UPDATE money SET money = money - ? WHERE store_id = " + store_id;
+
+                                            try (Connection conn2 = DriverManager.getConnection(URL, USER, PASSWORD);
+                                                 // Get the wholesale_price
+                                                 PreparedStatement getWholesalePriceStmt = conn2.prepareStatement(getWholesalePriceQuery);
+                                                 ResultSet rs = getWholesalePriceStmt.executeQuery()) {
+
+                                                // Check if the product exists
+                                                if (rs.next()) {
+                                                    int wholesalePrice = rs.getInt("wholesale_price");
+
+                                                    // Prepare the update query
+                                                    try (PreparedStatement updateStmt = conn2.prepareStatement(updateMoneyQuery)) {
+                                                        // Set the retail_price as the value to add to money
+                                                        updateStmt.setInt(1, wholesalePrice);
+
+                                                        // Execute the update query
+                                                        rowsAffected = updateStmt.executeUpdate();
+                                                        if (rowsAffected > 0) {
+                                                            System.out.println("Successful purchasing. Inventory updated. Money updated. Delivery updated.");
+                                                        } else {
+                                                            System.out.println("No rows updated.");
+                                                        }
+                                                    }
+                                                }
+
+                                            }
+                                        }
                                     }
                                     break;
                                 case 2:
-                                    /* 판매 상품 조회 */
+                                    /* 매입에 따른 배송 여부 확인 */
+
+                                    /* 매입한 상품 조회 */
+                                    // SQL query
+                                    String query1 = "SELECT pr.pur_id, p.pur_date_time, prod.prod_name, pr.quantity, " +
+                                            "IF(d.is_completed, 'true', 'false') AS is_completed " +
+                                            "FROM purchase_record pr " +
+                                            "JOIN purchase p ON pr.pur_id = p.pur_id " +
+                                            "JOIN product prod ON pr.prod_id = prod.prod_id " +
+                                            "LEFT JOIN delivery d ON p.pur_id = d.pur_id " +
+                                            "WHERE p.store_id = " + store_id;
+
+                                    try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+                                         PreparedStatement pstmt = conn.prepareStatement(query1)) {
+
+                                        // Execute the query
+                                        try (ResultSet rs = pstmt.executeQuery()) {
+                                            // Print the result as a table
+                                            System.out.printf("%-10s %-20s %-40s %-10s %-10s%n", "pur_id", "pur_date_time", "prod_name", "quantity", "is_completed");
+                                            System.out.println("------------------------------------------------------------------------------------------");
+
+                                            while (rs.next()) {
+                                                int purId = rs.getInt("pur_id");
+                                                Timestamp purDateTime = rs.getTimestamp("pur_date_time");
+                                                String prodName = rs.getString("prod_name");
+                                                int quantity = rs.getInt("quantity");
+                                                String isCompleted = rs.getString("is_completed");
+
+                                                System.out.printf("%-10d %-20s %-40s %-10d %-10s%n", purId, purDateTime, prodName, quantity, isCompleted);
+                                            }
+                                        }
+                                    }
+
+                                    /* 업데이트 여부 입력 */
+                                    System.out.print("Update or not?: ");
+                                    user_input = scanner.nextInt();
+
+                                    /* pur_id 입력 */
+                                    System.out.print("Which pur_id?: ");
+                                    int pur_id_1 = scanner.nextInt();
+
+                                    System.out.print("\n\n");
+                                    if (user_input != 0){
+                                        /* update is_completed */
+                                        // SQL query
+                                        String updateQuery = "UPDATE delivery SET is_completed = TRUE WHERE pur_id = " + pur_id_1;
+
+                                        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+                                             PreparedStatement pstmt = conn.prepareStatement(updateQuery)) {
+
+                                            // Execute the update
+                                            int rowsUpdated = pstmt.executeUpdate();
+
+                                            // Print the result
+                                            if (rowsUpdated > 0) {
+                                                System.out.println("Successfully updated the delivery record.");
+                                            }
+                                        }
+                                    }
+
                                     break;
                                 case 3:
                                     /* 매입환출(recall) */
-                                    System.out.print("[1] check inventory\n" /* 재고 조회 */ +
-                                                "[2] sale\n" /* 매출 조회[업데이트] */ +
-                                                "[3] purchase/delivery\n" /* 매입/배송 조회[업데이트] */ +
-                                                "[4] exit\n" +
-                                                "Enter your command: ");
+
+                                    /* 매입한 상품 조회 */
+                                    String query = "SELECT pr.pur_id, pc.pur_date_time, p.prod_name, pr.quantity " +
+                                            "FROM purchase_record pr " +
+                                            "JOIN purchase pc ON pr.pur_id = pc.pur_id " +
+                                            "JOIN product p ON pr.prod_id = p.prod_id " +
+                                            "WHERE pc.store_id = " + store_id + ";";
+
+                                    try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+                                         PreparedStatement pstmt = conn.prepareStatement(query)) {
+
+                                        // Execute the query
+                                        try (ResultSet rs = pstmt.executeQuery()) {
+                                            // Print the result as a table
+                                            System.out.printf("%-10s %-20s %-40s %-10s%n", "pur_id", "pur_date_time", "prod_name", "quantity");
+                                            System.out.println("----------------------------------------------------------------------");
+
+                                            while (rs.next()) {
+                                                int purId = rs.getInt("pur_id");
+                                                Timestamp purDateTime = rs.getTimestamp("pur_date_time");
+                                                String prodName = rs.getString("prod_name");
+                                                int quantity = rs.getInt("quantity");
+
+                                                System.out.printf("%-10d %-20s %-40s %-10d%n", purId, purDateTime, prodName, quantity);
+                                            }
+                                        }
+                                    }
+
+                                    /* pur_id 입력 */
+                                    System.out.print("Which pur_id?: ");
+                                    int pur_id_2 = scanner.nextInt();
+
+                                    System.out.println("Recall of pur_id " + pur_id_2 + " is completed. Money updated.");
+
                                     break;
                                 case 4:
                                     break;
@@ -258,7 +441,12 @@ public class Main {
 
                             try (Statement statement = connection.createStatement();
                                  ResultSet resultSet = statement.executeQuery(bufferSQL)) {
-                                System.out.println("available money: " + resultSet.getInt("money"));
+                                if (resultSet.next()) { // resultSet이 비어있지 않으면 실행
+                                    System.out.println("available money: " + resultSet.getInt("money"));
+                                } else {
+                                    System.out.println("Error occurred");
+                                    return;
+                                }
                             }
                         }
                         else{
@@ -270,18 +458,6 @@ public class Main {
                 }
                 System.out.print("\n\n");
             }
-
-
-            // should be deleted
-            /*
-            try (Statement statement = connection.createStatement();
-                 ResultSet resultSet = statement.executeQuery(bufferSQL)) {
-                while (resultSet.next()) {
-                    System.out.println("s_ID: " + resultSet.getInt("s_ID") +
-                            ", i_ID: " + resultSet.getString("i_id"));
-                }
-            }
-            */
 
         } catch (Exception e) {
             e.printStackTrace();
