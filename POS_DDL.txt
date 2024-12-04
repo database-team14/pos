@@ -60,6 +60,7 @@ CREATE TABLE inventory (
 CREATE TABLE sale (
     sale_id INT UNSIGNED AUTO_INCREMENT,
     sale_date_time DATETIME,
+    save BOOLEAN,
     store_id INT UNSIGNED,
     PRIMARY KEY (sale_id),
     FOREIGN KEY (store_id) REFERENCES store (store_id)
@@ -125,7 +126,6 @@ CREATE TABLE members (
 
 CREATE TABLE saleformember (
     salefor_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    save BOOLEAN,
     sale_id INT UNSIGNED,
     mem_id INT UNSIGNED,
     FOREIGN KEY (sale_id) REFERENCES sale(sale_id),

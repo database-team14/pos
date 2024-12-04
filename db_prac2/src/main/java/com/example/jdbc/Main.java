@@ -1,10 +1,6 @@
 package com.example.jdbc;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.Scanner;
 
 public class Main {
@@ -56,7 +52,7 @@ public class Main {
             int user_input;
             while (true) {
                 /* choose among three */
-                System.out.println("[1] check inventory\n" /* 재고 조회 */ +
+                System.out.print("[1] check inventory\n" /* 재고 조회 */ +
                         "[2] sale\n" /* 매출 조회[업데이트] */ +
                         "[3] purchase/delivery\n" /* 매입/배송 조회[업데이트] */ +
                         "[4] check money\n" /* 금고 조회 */ +
@@ -91,18 +87,19 @@ public class Main {
                         }
                         break;
                     case 2:
-                        /* 매출 */
-                        System.out.println("[1] sell\n" /* 판매(결제) */ +
-                                "[2] \n" /* 판매 상품 조회 */ +
-                                "[3] refund\n" /* 매입/배송 조회[업데이트] */ +
-                                "[4] return to the menu\n" +
+                        /* 매출 화면 */
+                        System.out.print("[1] sell\n" /* 판매(결제) */ +
+                                "[2] refund\n" /* 환불 */ +
+                                "[3] return to the menu\n" +
                                 "Enter your command: ");
                         user_input = scanner.nextInt();
                         System.out.print("\n\n");
 
                         switch (user_input){
                             case 1:
-                                /* 현재 재고 조회 */
+                                /* 판매(결제) */
+
+                                /* 재고 조회 */
                                 bufferSQL = "SELECT p.prod_id, p.prod_name, b.brand_name, i.inventory\n" +
                                         "FROM product p\n" +
                                         "JOIN prod_brand b ON p.brand_id = b.brand_id\n" +
@@ -115,6 +112,7 @@ public class Main {
                                     System.out.printf("%-10s %-40s %-20s %-10s%n", "prod_id", "prod_name", "brand_name", "inventory");
                                     System.out.println("--------------------------------------------------------------");
 
+                                    int i = 0;
                                     while (resultSet.next()) {
                                         int prodId = resultSet.getInt("prod_id");
                                         String prodName = resultSet.getString("prod_name");
@@ -123,25 +121,75 @@ public class Main {
 
                                         System.out.printf("%-10d %-40s %-20s %-10d%n", prodId, prodName, brandName, inventory);
                                     }
-                                    System.out.print("\n\n");
                                 }
+
+                                /* 상품 입력 */
+                                System.out.print("Which product?: ");
+                                int prod_id = scanner.nextInt();
+
+                                /* 회원 입력 */
+                                System.out.print("Is a member?: ");
+                                user_input = scanner.nextInt();
+                                System.out.print("\n\n");
+
+                                /* Update the inventory */
+                                bufferSQL = "UPDATE inventory\n" +
+                                        "SET inventory = inventory - 1\n" +
+                                        "WHERE store_id = " + store_id + " AND prod_id = " + prod_id + " AND inventory > 0;";
+
+                                try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+                                     PreparedStatement pstmt = conn.prepareStatement(bufferSQL)) {
+
+                                    int rowsAffected = pstmt.executeUpdate();
+
+                                    if (rowsAffected > 0) {
+                                        /* money update */
+
+                                        System.out.print("Payment succeeded. Inventory updated. Money updated");
+                                        if (user_input != 0)
+                                            System.out.print("Points updated.");
+                                        System.out.print("\n");
+                                    }
+                                }
+
                                 break;
+
                             case 2:
-                                /* 판매 상품 조회 */
+                                /* 환불 */
+
+                                /* 판매한 상품 조회 */
+                                String query = "SELECT sr.sale_id, s.sale_date_time, p.prod_name, sr.quantity " +
+                                        "FROM sale_record sr " +
+                                        "JOIN sale s ON sr.sale_id = s.sale_id " +
+                                        "JOIN product p ON sr.prod_id = p.prod_id " +
+                                        "WHERE s.store_id = " + store_id + ";";
+
+                                try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+                                     PreparedStatement pstmt = conn.prepareStatement(query)) {
+
+                                    // Execute the query
+                                    try (ResultSet rs = pstmt.executeQuery()) {
+                                        // Print the result as a table
+                                        System.out.printf("%-10s %-20s %-40s %-10s%n", "sale_id", "sale_date_time", "prod_name", "quantity");
+                                        System.out.println("----------------------------------------------------------------------");
+
+                                        while (rs.next()) {
+                                            int saleId = rs.getInt("sale_id");
+                                            Timestamp saleDateTime = rs.getTimestamp("sale_date_time");
+                                            String prodName = rs.getString("prod_name");
+                                            int quantity = rs.getInt("quantity");
+
+                                            System.out.printf("%-10d %-20s %-40s %-10d%n", saleId, saleDateTime, prodName, quantity);
+                                        }
+                                    }
+                                }
+
+                                /* sale_id 입력 */
+                                System.out.print("Which sale_id?: ");
+                                int sale_id = scanner.nextInt();
+
                                 break;
                             case 3:
-                                if (position_id == 3) { // if the worker is a normal employee
-                                    System.out.println("You don't have privileges");
-                                }
-                                else{
-                                    System.out.println("[1] check inventory\n" /* 재고 조회 */ +
-                                            "[2] sale\n" /* 매출 조회[업데이트] */ +
-                                            "[3] purchase/delivery\n" /* 매입/배송 조회[업데이트] */ +
-                                            "[4] exit\n" +
-                                            "Enter your command: ");
-                                }
-                                break;
-                            case 4:
                                 break;
                         }
                         break;
@@ -151,7 +199,7 @@ public class Main {
                             System.out.println("You don't have the privileges");
                         }
                         else{
-                            System.out.println("[1] purchase\n" /* 매입 */ +
+                            System.out.print("[1] purchase\n" /* 매입 */ +
                                     "[2] check whether the delivery is completed\n" /* 매입에 따른 배송 내역 확인 */ +
                                     "[3] recall\n" /*  */ +
                                     "[4] exit\n" +
@@ -161,7 +209,7 @@ public class Main {
 
                             switch (user_input){
                                 case 1:
-                                    /*  */
+                                    /* 매입 */
                                     bufferSQL = "SELECT p.prod_id, p.prod_name, b.brand_name, i.inventory\n" +
                                             "FROM product p\n" +
                                             "JOIN prod_brand b ON p.brand_id = b.brand_id\n" +
@@ -189,16 +237,12 @@ public class Main {
                                     /* 판매 상품 조회 */
                                     break;
                                 case 3:
-                                    if (position_id == 3) { // if the worker is a normal employee
-                                        System.out.println("You don't have privileges");
-                                    }
-                                    else{
-                                        System.out.println("[1] check inventory\n" /* 재고 조회 */ +
+                                    /* 매입환출(recall) */
+                                    System.out.print("[1] check inventory\n" /* 재고 조회 */ +
                                                 "[2] sale\n" /* 매출 조회[업데이트] */ +
                                                 "[3] purchase/delivery\n" /* 매입/배송 조회[업데이트] */ +
                                                 "[4] exit\n" +
                                                 "Enter your command: ");
-                                    }
                                     break;
                                 case 4:
                                     break;

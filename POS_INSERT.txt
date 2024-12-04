@@ -181,10 +181,10 @@ VALUES
     (2, 2, 3);
 
 -- 매출
-INSERT INTO sale (sale_date_time, store_id)
+INSERT INTO sale (sale_date_time, save, store_id)
 VALUES
-    ('2024-12-01 12:00:00', 1),
-    ('2024-12-01 14:30:00', 2);
+    ('2024-12-01 12:00:00', TRUE, 1),
+    ('2024-12-01 14:30:00', FALSE, 2);
 
 -- 매출내역
 INSERT INTO sale_record (sale_id, prod_id, quantity)
@@ -195,11 +195,10 @@ VALUES
     (2, 5, 8);
 
 -- 고객 구입 내역
-INSERT INTO saleformember (save, sale_id, mem_id)
+INSERT INTO saleformember (sale_id, mem_id)
 VALUES
-    (TRUE, 1, 1),  -- 유재석이 1번 판매에서 포인트를 적립
-    (TRUE, 2, 2),  -- 강호동이 2번 판매에서 포인트를 적립
-    (FALSE, 1, 3);-- 박보검이 1번 판매에서 포인트를 적립하지 않음
+    (1, 1),  -- 유재석이 1번 판매에서 포인트를 적립
+    (2, 2);  -- 강호동이 2번 판매에서 포인트를 적립하지 않음
 
 -- 매출환입
 INSERT INTO sale_return (sale_re_date_time, sale_id, store_id)
