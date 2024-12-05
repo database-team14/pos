@@ -43,7 +43,7 @@ public class Main {
             }
 
             /* logged-in */
-            System.out.println("Welcome! " + buffer + "!");
+            System.out.println("\nWelcome! " + buffer + "!");
 
 
             /* get store_id */
@@ -59,6 +59,8 @@ public class Main {
                     return;
                 }
             }
+
+            System.out.print("\n");
 
             int user_input;
             while (true) {
@@ -366,13 +368,14 @@ public class Main {
                                     System.out.print("Update or not?: ");
                                     user_input = scanner.nextInt();
 
-                                    /* pur_id 입력 */
-                                    System.out.print("Which pur_id?: ");
-                                    int pur_id_1 = scanner.nextInt();
-
                                     System.out.print("\n\n");
                                     if (user_input != 0){
                                         /* update is_completed */
+
+                                        /* pur_id 입력 */
+                                        System.out.print("Which pur_id?: ");
+                                        int pur_id_1 = scanner.nextInt();
+
                                         // SQL query
                                         String updateQuery = "UPDATE delivery SET is_completed = TRUE WHERE pur_id = " + pur_id_1;
 
@@ -433,7 +436,7 @@ public class Main {
                         }
                         break;
                     case 4:
-                        if (position_id == 1) {
+                        if (position_id == 1) { // if the user is owner
                             /* 금고 조회 */
                             bufferSQL = "SELECT money\n" +
                                     "FROM money\n" +
